@@ -7,9 +7,28 @@ class Zith < Formula
   license "MIT"
 
   depends_on "cmake" => :build
+  depends_on "pkgconf" => :build
+  depends_on "libffi"
+  depends_on "llvm"
+
+  resource "cli11" do
+    url "https://github.com/CLIUtils/CLI11/archive/refs/tags/v2.4.1.tar.gz"
+    sha256 "73b7ec52261ce8fe980a29df6b4ceb66243bb0b779451dbd3d014cfec9fdbb58"
+  end
+
+  resource "tomlplusplus" do
+    url "https://github.com/marzer/tomlplusplus/archive/refs/tags/v3.4.0.tar.gz"
+    sha256 "8517f65938a4faae9ccf8ebb36631a38c1cadfb5efa85d9a72e15b9e97d25155"
+  end
 
   def install
-    system "cmake", "-S", "scripts", "-B", "build", *std_cmake_args
+    resource("cli11").stage(buildpath/"deps")
+    resource("tomlplusplus").stage(buildpath/"deps")
+
+    system "cmake", "-S", "scripts", "-B", "build",
+           *std_cmake_args,
+           "-DFETCHCONTENT_SOURCE_DIR_CLI11=#{buildpath}/deps/CLI11-2.4.1",
+           "-DFETCHCONTENT_SOURCE_DIR_TOMLPLUSPLUS=#{buildpath}/deps/tomlplusplus-3.4.0"
     system "cmake", "--build", "build"
     system "cmake", "--install", "build"
   end
